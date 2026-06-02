@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Create beautiful, professional, ATS-friendly resumes from structured JSON data. Features live preview, multiple templates, AI-powered content enhancement, and PDF export." />
+  <title>Resume Creator — ATS-Friendly Resume Builder</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📄</text></svg>" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+</head>
+<body>
+  <div id="app">
+
+    <!-- ─── Top Toolbar ─────────────────────────────────────────────────── -->
+    <header class="toolbar">
+      <div class="toolbar__brand">
+        <span class="toolbar__logo">ResumeForge</span>
+        <span class="toolbar__version">v1.0</span>
+      </div>
+
+      <div class="toolbar__center">
+        <!-- Mode Toggle -->
+        <div class="mode-toggle">
+          <button id="mode-form" class="mode-toggle__btn active">📝 Form</button>
+          <button id="mode-json" class="mode-toggle__btn">{ } JSON</button>
+        </div>
+
+        <!-- Template Selector -->
+        <div class="template-select">
+          <select id="template-select">
+            <option value="classic">📋 Classic</option>
+            <option value="modern">🎨 Modern</option>
+            <option value="minimal">✨ Minimal</option>
+          </select>
+        </div>
+
+        <!-- AI Status -->
+        <div class="ai-status">
+          <span id="ai-status-dot" class="ai-status__dot offline"></span>
+          <span id="ai-status-text">Checking AI...</span>
+        </div>
+      </div>
+
+      <div class="toolbar__actions">
+        <button id="export-pdf" class="btn btn--primary">
+          📄 Export PDF
+        </button>
+      </div>
+    </header>
+
+    <!-- ─── Main Content ────────────────────────────────────────────────── -->
+    <main class="main-content">
+
+      <!-- Editor Panel (Left) -->
+      <aside class="editor-panel">
+        <div class="editor-panel__header">
+          <h1 class="editor-panel__title">Resume Editor</h1>
+        </div>
+        <div id="editor-body" class="editor-panel__body">
+          <!-- Form or JSON editor injected here -->
+        </div>
+      </aside>
+
+      <!-- Preview Panel (Right) -->
+      <section class="preview-panel">
+        <div class="preview-panel__header">
+          <span class="preview-panel__title">Live Preview</span>
+        </div>
+        <div class="preview-panel__body">
+          <div id="resume-paper" class="resume-paper template-classic">
+            <!-- Resume HTML rendered here -->
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Toast Container -->
+    <div id="toast-container" class="toast-container"></div>
+
+  </div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
