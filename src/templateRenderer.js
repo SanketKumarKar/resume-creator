@@ -198,6 +198,65 @@ function buildPublicationsHtml(pubs) {
     .join("");
 }
 
+function buildFlexibleEntry(item) {
+  if (item === null || item === undefined) return "";
+  if (typeof item === "string") return esc(item);
+  if (typeof item !== "object") return esc(String(item));
+
+  const parts = [];
+  if (item.title) parts.push(`<strong>${esc(item.title)}</strong>`);
+  if (item.name && item.name !== item.title) parts.push(`<strong>${esc(item.name)}</strong>`);
+  if (item.role) parts.push(esc(item.role));
+  if (item.organization) parts.push(esc(item.organization));
+  if (item.description) parts.push(esc(item.description));
+
+  const remaining = Object.entries(item)
+    .filter(([key, value]) => !["title", "name", "role", "organization", "description"].includes(key) && value !== null && value !== undefined && value !== "")
+    .map(([key, value]) => `${esc(key.replace(/_/g, " "))}: ${Array.isArray(value) ? value.map(esc).join(", ") : esc(value)}`);
+
+  return [...parts, ...remaining].join(" · ");
+}
+
+function buildGenericSectionHtml(title, items) {
+  if (!hasContent(items)) return "";
+
+  return `<div class="resume-section">
+    <h2 class="resume-section-title">${esc(title)}</h2>
+    <ul class="resume-generic-list">
+      ${items.map((item) => `<li>${buildFlexibleEntry(item)}</li>`).join("")}
+    </ul>
+  </div>`;
+}
+
+function buildAdditionalSectionsHtml(data) {
+  let html = "";
+
+  html += buildGenericSectionHtml("Extracurricular Activities", data.extracurricular_activities);
+  html += buildGenericSectionHtml("Interests & Hobbies", data.interests_hobbies);
+  html += buildGenericSectionHtml("References", data.references);
+
+  if (data.additional_sections && typeof data.additional_sections === "object" && !Array.isArray(data.additional_sections)) {
+    for (const [sectionTitle, sectionValue] of Object.entries(data.additional_sections)) {
+      const title = sectionTitle.replace(/_/g, " ");
+      if (Array.isArray(sectionValue)) {
+        html += buildGenericSectionHtml(title, sectionValue);
+      } else if (sectionValue && typeof sectionValue === "object") {
+        const entries = Object.entries(sectionValue)
+          .map(([key, value]) => `<li><strong>${esc(key.replace(/_/g, " "))}:</strong> ${Array.isArray(value) ? value.map(esc).join(", ") : esc(value)}</li>`)
+          .join("");
+
+        if (entries) {
+          html += `<div class="resume-section"><h2 class="resume-section-title">${esc(title)}</h2><ul class="resume-generic-list">${entries}</ul></div>`;
+        }
+      } else if (sectionValue) {
+        html += `<div class="resume-section"><h2 class="resume-section-title">${esc(title)}</h2><p class="resume-summary">${esc(sectionValue)}</p></div>`;
+      }
+    }
+  }
+
+  return html;
+}
+
 // ═══════════════════════════════════════════════════════════════════════════
 // Template: Classic
 // ═══════════════════════════════════════════════════════════════════════════
@@ -968,5 +1027,6 @@ const renderers = {
  */
 export function renderResume(data, template = "classic") {
   const renderer = renderers[template] || renderers.classic;
-  return renderer(data || {});
+  const resumeData = data || {};
+  return renderer(resumeData) + buildAdditionalSectionsHtml(resumeData);
 }

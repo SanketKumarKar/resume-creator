@@ -42,10 +42,10 @@ export function validateResumeJson(data) {
   }
 
   // ─── summary / objective ────────────────────────────────────────────────
-  if (data.summary !== undefined && typeof data.summary !== "string") {
+  if (data.summary !== undefined && data.summary !== null && typeof data.summary !== "string") {
     errors.push("summary must be a string");
   }
-  if (data.objective !== undefined && typeof data.objective !== "string") {
+  if (data.objective !== undefined && data.objective !== null && typeof data.objective !== "string") {
     errors.push("objective must be a string");
   }
 
@@ -172,6 +172,19 @@ export function validateResumeJson(data) {
     errors.push("volunteer_experience must be an array");
   }
 
+  if (data.extracurricular_activities !== undefined && !Array.isArray(data.extracurricular_activities)) {
+    errors.push("extracurricular_activities must be an array");
+  }
+  if (data.interests_hobbies !== undefined && !Array.isArray(data.interests_hobbies)) {
+    errors.push("interests_hobbies must be an array");
+  }
+  if (data.references !== undefined && !Array.isArray(data.references)) {
+    errors.push("references must be an array");
+  }
+  if (data.additional_sections !== undefined && (typeof data.additional_sections !== "object" || Array.isArray(data.additional_sections))) {
+    errors.push("additional_sections must be an object");
+  }
+
   // ─── publications ────────────────────────────────────────────────────────
   if (data.publications !== undefined && !Array.isArray(data.publications)) {
     errors.push("publications must be an array");
@@ -182,6 +195,7 @@ export function validateResumeJson(data) {
     "personal_info", "summary", "objective", "work_experience", "education",
     "technical_skills", "soft_skills", "projects", "certifications",
     "awards_honors", "languages", "volunteer_experience", "publications",
+    "extracurricular_activities", "interests_hobbies", "references", "additional_sections",
   ];
   Object.keys(data).forEach((key) => {
     if (!knownKeys.includes(key)) {
