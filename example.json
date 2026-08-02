@@ -1,0 +1,172 @@
+[
+  {
+    "personal_info": {
+      "full_name": "MARCUS HALL",
+      "email": "beddylea@gmail.com",
+      "phone": "+1-555-0100",
+      "address": null,
+      "city": "San Francisco",
+      "state": "CA",
+      "country": null,
+      "zip_code": null,
+      "linkedin": "linkedin.com/in/bedivere-lea",
+      "github": "github.com//bedivere-lea",
+      "portfolio": "bedivere-lea.github.io",
+      "website": null,
+      "other_social": []
+    },
+    "objective": null,
+    "summary": "Resourceful Developer with 11 years of experience in designing and developing user interfaces, testing and training employees. Skilled at utilizing a wide variety of tools and programs to provide effective applications.",
+    "education": [
+      {
+        "degree": "Bachelor of Computer Science",
+        "field_of_study": "Computer Science",
+        "institution": "New York University",
+        "location": null,
+        "start_date": "Aug, 2020",
+        "end_date": "Jul, 2024",
+        "gpa": null,
+        "honors": null,
+        "relevant_coursework": []
+      }
+    ],
+    "work_experience": [
+      {
+        "job_title": "Developer",
+        "company": "Torph TTC",
+        "location": null,
+        "start_date": "Feb, 2023",
+        "end_date": "Feb, 2023",
+        "is_current": false,
+        "responsibilities": [
+          "Torph TTC is a global software company that offers user interface UI development tools and components for a range of developer applications across all platforms.",
+          "Created and maintained 10 web applications for numerous national and foreign clients.",
+          "Ensured that the user interfaces and user experience of the software applications developed by the team met at least 80% of users expectations.",
+          "Created and analyzed 500 unit test cases.",
+          "Developed python scripts to automate image's noise-reduction process which helped improve research analysis time by 40%.",
+          "Established and lead a team of 10 people; covering every key role in the early stages."
+        ],
+        "achievements": []
+      },
+      {
+        "job_title": "Front End Web Developer",
+        "company": "Reilty Group",
+        "location": null,
+        "start_date": "Feb, 2023",
+        "end_date": "Mar, 2023",
+        "is_current": false,
+        "responsibilities": [
+          "Reilty Group is an industry-leading provider of online gambling software and solutions.",
+          "Increased by 35% the reach of users to the platform, over the installation of the web platform in mobile devices.",
+          "Delivered 30 web solutions.",
+          "Replaced 1 full-time web developer under part-time employment achieving a productivity gain of over 60% as measured by working hours.",
+          "Worked with more than 4 different teams at different points of time and provided end-to-end solutions for clients."
+        ],
+        "achievements": []
+      },
+      {
+        "job_title": "Python Developer",
+        "company": "HellX",
+        "location": null,
+        "start_date": "Feb, 2023",
+        "end_date": "Mar, 2023",
+        "is_current": false,
+        "responsibilities": [
+          "Heller is a Software Editor specialized in logistics management.",
+          "Developed several automation systems - saved over $50,000 annually.",
+          "Joined the team as #10 employee as a developer working directly with the biggest customers.",
+          "Involved in coding as per the requirement, delivered well ahead of time which saved project cost by 20%.",
+          "Reduced database size by nearly 50% and improved its performance by 20%.",
+          "Delivery time of good reduced by 50%.",
+          "Delivery time of good reduced by 75%."
+        ],
+        "achievements": []
+      },
+      {
+        "job_title": "Project manager",
+        "company": "Inconnect Media",
+        "location": null,
+        "start_date": "Invalid Date, NaN",
+        "end_date": "Present",
+        "is_current": true,
+        "responsibilities": [
+          "Developed several automation systems - saved over $50,000 annually.",
+          "Joined the team as #10 employee as a developer working directly with the biggest customers.",
+          "Involved in coding as per the requirement, delivered well ahead of time which saved project cost by 20%.",
+          "Reduced database size by nearly 50% and improved its performance by 20%.",
+          "Delivery time of good reduced by 50%."
+        ],
+        "achievements": []
+      }
+    ],
+    "technical_skills": {
+      "programming_languages": [
+        "JavaScript",
+        "Python",
+        "C++",
+        "SQL"
+      ],
+      "frameworks_libraries": [
+        "HTML5",
+        "CSS"
+      ],
+      "databases": [],
+      "cloud_platforms": [],
+      "tools_software": [],
+      "operating_systems": [],
+      "methodologies": [
+        "Web Services",
+        "User Interface"
+      ],
+      "other": [
+        "Creativity"
+      ]
+    },
+    "soft_skills": [
+      "Collaboration",
+      "Problem-solving",
+      "Communication",
+      "Time management",
+      "Result-oriented",
+      "Public Speaking",
+      "Writing",
+      "Research"
+    ],
+    "projects": [],
+    "certifications": [
+      {
+        "name": "Certified Web Professional-Web Developer",
+        "issuing_organization": null,
+        "issue_date": null,
+        "expiry_date": null,
+        "credential_id": null,
+        "url": null
+      },
+      {
+        "name": "Java Development Certified Professional",
+        "issuing_organization": null,
+        "issue_date": null,
+        "expiry_date": null,
+        "credential_id": null,
+        "url": null
+      }
+    ],
+    "awards_honors": [],
+    "publications": [],
+    "languages": [
+      {
+        "language": "English",
+        "proficiency": null
+      },
+      {
+        "language": "Hindi",
+        "proficiency": null
+      }
+    ],
+    "volunteer_experience": [],
+    "extracurricular_activities": [],
+    "interests_hobbies": [],
+    "references": [],
+    "additional_sections": {}
+  }
+]

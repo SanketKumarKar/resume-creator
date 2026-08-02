@@ -25,3 +25,6 @@ dist-ssr
 .agents
 graphify-out
 .env
+.agents
+dist    
+Resume_Formats

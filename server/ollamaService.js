@@ -45,9 +45,9 @@ export async function callOllama(systemPrompt, userPrompt, opts = {}) {
     },
   };
 
-  if (json) {
-    requestBody.format = "json";
-  }
+  // If json is true, we will parse the response locally instead of forcing Ollama's format="json"
+  // which can cause reasoning models to cram their thoughts into a "thought" JSON key.
+
 
   const response = await fetch(OLLAMA_URL, {
     method: "POST",
@@ -72,16 +72,20 @@ export async function callOllama(systemPrompt, userPrompt, opts = {}) {
  * Robust JSON parser — handles markdown fences, trailing commas, etc.
  */
 function parseJsonResponse(text) {
-  let cleaned = text
-    .replace(/^```json\s*/i, "")
-    .replace(/^```\s*/i, "")
-    .replace(/```\s*$/i, "")
-    .trim();
+  // Strip <think>...</think> blocks common in reasoning models
+  let cleaned = text.replace(/<think>[\s\S]*?<\/think>/gi, "").trim();
+
+  // Try to find a JSON markdown block first
+  const match = cleaned.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
+  if (match && match[1]) {
+    cleaned = match[1].trim();
+  }
 
   try {
     return JSON.parse(cleaned);
   } catch {
     // Try extracting between first { and last }
+
     const start = cleaned.indexOf("{");
     const end = cleaned.lastIndexOf("}");
     if (start >= 0 && end > start) {

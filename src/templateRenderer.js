@@ -486,18 +486,484 @@ function renderMinimal(data) {
   return html;
 }
 
+// ═══════════════════════════════════════════════════════════════════════════
+// Template: Photo
+// ═══════════════════════════════════════════════════════════════════════════
+
+function renderPhoto(data) {
+  const info = data.personal_info || {};
+  const links = buildLinks(info);
+
+  // ─── Sidebar ───
+  let sidebar = ``;
+
+  if (info.photoUrl) {
+    sidebar += `<div class="resume-photo-container"><img src="${esc(info.photoUrl)}" alt="Profile Photo" class="resume-photo" /></div>`;
+  }
+
+  sidebar += `<h1>${esc(info.full_name || "Your Name")}</h1>`;
+
+  // Contact in sidebar
+  const contactItems = [];
+  if (info.email) contactItems.push(`<span>📧 ${esc(info.email)}</span>`);
+  if (info.phone) contactItems.push(`<span>📱 ${esc(info.phone)}</span>`);
+  const location = [info.city, info.state].filter(Boolean).join(", ");
+  if (location) contactItems.push(`<span>📍 ${esc(location)}</span>`);
+  links.forEach((l) => contactItems.push(`<span><a href="${esc(l.url)}">${esc(l.label)}</a></span>`));
+
+  if (contactItems.length) {
+    sidebar += `<div class="resume-contact-col">${contactItems.join("")}</div>`;
+  }
+
+  // Skills in sidebar
+  if (hasSkills(data.technical_skills)) {
+    sidebar += `<div class="sidebar-section">
+      <h2 class="resume-section-title">Skills</h2>
+      ${buildSkillsHtml(data.technical_skills, data.soft_skills)}
+    </div>`;
+  }
+
+  // Languages in sidebar
+  if (hasContent(data.languages)) {
+    sidebar += `<div class="sidebar-section">
+      <h2 class="resume-section-title">Languages</h2>
+      ${data.languages.map((l) => `<div class="sidebar-item">${esc(l.language || "")}${l.proficiency ? ` — ${esc(l.proficiency)}` : ""}</div>`).join("")}
+    </div>`;
+  }
+
+  // Certifications in sidebar
+  if (hasContent(data.certifications)) {
+    sidebar += `<div class="sidebar-section">
+      <h2 class="resume-section-title">Certifications</h2>
+      ${data.certifications.map((c) => `<div class="sidebar-item"><strong>${esc(c.name || "")}</strong><br/>${esc(c.issuing_organization || "")}${c.issue_date ? ` (${esc(c.issue_date)})` : ""}</div>`).join("")}
+    </div>`;
+  }
+
+  // ─── Main ───
+  let main = "";
+
+  if (data.summary || data.objective) {
+    main += `<div class="resume-section">
+      <h2 class="resume-section-title">About</h2>
+      <p class="resume-summary">${esc(data.summary || data.objective)}</p>
+    </div>`;
+  }
+
+  if (hasContent(data.work_experience)) {
+    main += `<div class="resume-section">
+      <h2 class="resume-section-title">Experience</h2>
+      ${buildExperienceHtml(data.work_experience)}
+    </div>`;
+  }
+
+  if (hasContent(data.education)) {
+    main += `<div class="resume-section">
+      <h2 class="resume-section-title">Education</h2>
+      ${buildEducationHtml(data.education)}
+    </div>`;
+  }
+
+  if (hasContent(data.projects)) {
+    main += `<div class="resume-section">
+      <h2 class="resume-section-title">Projects</h2>
+      ${buildProjectsHtml(data.projects)}
+    </div>`;
+  }
+
+  if (hasContent(data.awards_honors)) {
+    main += `<div class="resume-section">
+      <h2 class="resume-section-title">Awards</h2>
+      ${buildAwardsHtml(data.awards_honors)}
+    </div>`;
+  }
+
+  if (hasContent(data.publications)) {
+    main += `<div class="resume-section">
+      <h2 class="resume-section-title">Publications</h2>
+      ${buildPublicationsHtml(data.publications)}
+    </div>`;
+  }
+
+  if (hasContent(data.volunteer_experience)) {
+    main += `<div class="resume-section">
+      <h2 class="resume-section-title">Volunteering</h2>
+      ${buildVolunteerHtml(data.volunteer_experience)}
+    </div>`;
+  }
+
+  return `<div class="resume-sidebar">${sidebar}</div><div class="resume-main">${main}</div>`;
+}
+
 // ─── Public API ──────────────────────────────────────────────────────────────
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Template: prof-developer (Software Developer)
+// Dark-purple sidebar, code-centric layout, projects & skills first
+// ═══════════════════════════════════════════════════════════════════════════
+
+function renderProfDeveloper(data) {
+  const info = data.personal_info || {};
+  const links = buildLinks(info);
+
+  let sidebar = `<h1>${esc(info.full_name || "Your Name")}</h1>`;
+  if (info.job_title) sidebar += `<div class="prof-title">${esc(info.job_title)}</div>`;
+
+  const contactItems = [];
+  if (info.email) contactItems.push(`<span>📧 ${esc(info.email)}</span>`);
+  if (info.phone) contactItems.push(`<span>📱 ${esc(info.phone)}</span>`);
+  const location = [info.city, info.state].filter(Boolean).join(", ");
+  if (location) contactItems.push(`<span>📍 ${esc(location)}</span>`);
+  links.forEach((l) => contactItems.push(`<span><a href="${esc(l.url)}">${esc(l.label)}</a></span>`));
+  if (contactItems.length) sidebar += `<div class="resume-contact-col">${contactItems.join("")}</div>`;
+
+  // Technical Skills in sidebar (primary value for devs)
+  if (hasSkills(data.technical_skills)) {
+    sidebar += `<div class="sidebar-section"><h2 class="resume-section-title">Tech Stack</h2>${buildSkillsHtml(data.technical_skills, data.soft_skills)}</div>`;
+  }
+  if (hasContent(data.certifications)) {
+    sidebar += `<div class="sidebar-section"><h2 class="resume-section-title">Certifications</h2>${data.certifications.map((c) => `<div class="sidebar-item"><strong>${esc(c.name || "")}</strong><br/>${esc(c.issuing_organization || "")}${c.issue_date ? ` (${esc(c.issue_date)})` : ""}</div>`).join("")}</div>`;
+  }
+  if (hasContent(data.languages)) {
+    sidebar += `<div class="sidebar-section"><h2 class="resume-section-title">Languages</h2>${data.languages.map((l) => `<div class="sidebar-item">${esc(l.language || "")}${l.proficiency ? ` — ${esc(l.proficiency)}` : ""}</div>`).join("")}</div>`;
+  }
+
+  let main = "";
+  if (data.summary || data.objective) {
+    main += `<div class="resume-section"><h2 class="resume-section-title">About</h2><p class="resume-summary">${esc(data.summary || data.objective)}</p></div>`;
+  }
+  if (hasContent(data.work_experience)) {
+    main += `<div class="resume-section"><h2 class="resume-section-title">Experience</h2>${buildExperienceHtml(data.work_experience)}</div>`;
+  }
+  if (hasContent(data.projects)) {
+    main += `<div class="resume-section"><h2 class="resume-section-title">Projects</h2>${buildProjectsHtml(data.projects)}</div>`;
+  }
+  if (hasContent(data.education)) {
+    main += `<div class="resume-section"><h2 class="resume-section-title">Education</h2>${buildEducationHtml(data.education)}</div>`;
+  }
+  if (hasContent(data.awards_honors)) {
+    main += `<div class="resume-section"><h2 class="resume-section-title">Awards</h2>${buildAwardsHtml(data.awards_honors)}</div>`;
+  }
+  if (hasContent(data.volunteer_experience)) {
+    main += `<div class="resume-section"><h2 class="resume-section-title">Open Source / Volunteering</h2>${buildVolunteerHtml(data.volunteer_experience)}</div>`;
+  }
+
+  return `<div class="resume-sidebar">${sidebar}</div><div class="resume-main">${main}</div>`;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Template: prof-teacher (Teacher / Educator)
+// Warm amber tones, education first, leadership sections
+// ═══════════════════════════════════════════════════════════════════════════
+
+function renderProfTeacher(data) {
+  const info = data.personal_info || {};
+  const contact = buildContactInfo(info);
+  const links = buildLinks(info);
+
+  let html = `<div class="resume-header">
+    <h1>${esc(info.full_name || "Your Name")}</h1>
+    ${contact.length ? `<div class="resume-contact-row">${contact.map((c) => `<span>${c}</span>`).join("")}</div>` : ""}
+    ${links.length ? `<div class="resume-contact-row resume-links-row">${links.map((l) => `<span><a href="${esc(l.url)}">${esc(l.label)}</a></span>`).join("")}</div>` : ""}
+  </div>`;
+
+  if (data.summary || data.objective) {
+    html += `<div class="resume-section"><h2 class="resume-section-title">Teaching Philosophy</h2><p class="resume-summary">${esc(data.summary || data.objective)}</p></div>`;
+  }
+  // Education first for teachers
+  if (hasContent(data.education)) {
+    html += `<div class="resume-section"><h2 class="resume-section-title">Education & Credentials</h2>${buildEducationHtml(data.education)}</div>`;
+  }
+  if (hasContent(data.certifications)) {
+    html += `<div class="resume-section"><h2 class="resume-section-title">Licenses & Certifications</h2>${buildCertificationsHtml(data.certifications)}</div>`;
+  }
+  if (hasContent(data.work_experience)) {
+    html += `<div class="resume-section"><h2 class="resume-section-title">Teaching Experience</h2>${buildExperienceHtml(data.work_experience)}</div>`;
+  }
+  if (hasSkills(data.technical_skills)) {
+    html += `<div class="resume-section"><h2 class="resume-section-title">Skills & Competencies</h2>${buildSkillsHtml(data.technical_skills, data.soft_skills)}</div>`;
+  }
+  if (hasContent(data.volunteer_experience)) {
+    html += `<div class="resume-section"><h2 class="resume-section-title">Extracurricular & Leadership</h2>${buildVolunteerHtml(data.volunteer_experience)}</div>`;
+  }
+  if (hasContent(data.awards_honors)) {
+    html += `<div class="resume-section"><h2 class="resume-section-title">Awards & Recognition</h2>${buildAwardsHtml(data.awards_honors)}</div>`;
+  }
+  if (hasContent(data.publications)) {
+    html += `<div class="resume-section"><h2 class="resume-section-title">Publications & Research</h2>${buildPublicationsHtml(data.publications)}</div>`;
+  }
+  if (hasContent(data.languages)) {
+    html += `<div class="resume-section"><h2 class="resume-section-title">Languages</h2><p>${buildLanguagesHtml(data.languages)}</p></div>`;
+  }
+
+  return html;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Template: prof-customer-service (Customer Service Representative)
+// Teal/cyan accent, soft skills prominent, two-column
+// ═══════════════════════════════════════════════════════════════════════════
+
+function renderProfCustomerService(data) {
+  const info = data.personal_info || {};
+  const links = buildLinks(info);
+
+  let sidebar = `<h1>${esc(info.full_name || "Your Name")}</h1>`;
+  const contactItems = [];
+  if (info.email) contactItems.push(`<span>📧 ${esc(info.email)}</span>`);
+  if (info.phone) contactItems.push(`<span>📱 ${esc(info.phone)}</span>`);
+  const location = [info.city, info.state].filter(Boolean).join(", ");
+  if (location) contactItems.push(`<span>📍 ${esc(location)}</span>`);
+  links.forEach((l) => contactItems.push(`<span><a href="${esc(l.url)}">${esc(l.label)}</a></span>`));
+  if (contactItems.length) sidebar += `<div class="resume-contact-col">${contactItems.join("")}</div>`;
+
+  // Soft skills prominent
+  if (hasContent(data.soft_skills)) {
+    sidebar += `<div class="sidebar-section"><h2 class="resume-section-title">Key Strengths</h2>${data.soft_skills.map((s) => `<div class="sidebar-item">✔ ${esc(s)}</div>`).join("")}</div>`;
+  }
+  if (hasSkills(data.technical_skills)) {
+    sidebar += `<div class="sidebar-section"><h2 class="resume-section-title">Tools & Systems</h2>${buildSkillsHtml(data.technical_skills, [])}</div>`;
+  }
+  if (hasContent(data.languages)) {
+    sidebar += `<div class="sidebar-section"><h2 class="resume-section-title">Languages</h2>${data.languages.map((l) => `<div class="sidebar-item">${esc(l.language || "")}${l.proficiency ? ` — ${esc(l.proficiency)}` : ""}</div>`).join("")}</div>`;
+  }
+  if (hasContent(data.certifications)) {
+    sidebar += `<div class="sidebar-section"><h2 class="resume-section-title">Certifications</h2>${data.certifications.map((c) => `<div class="sidebar-item"><strong>${esc(c.name || "")}</strong></div>`).join("")}</div>`;
+  }
+
+  let main = "";
+  if (data.summary || data.objective) {
+    main += `<div class="resume-section"><h2 class="resume-section-title">Professional Profile</h2><p class="resume-summary">${esc(data.summary || data.objective)}</p></div>`;
+  }
+  if (hasContent(data.work_experience)) {
+    main += `<div class="resume-section"><h2 class="resume-section-title">Work Experience</h2>${buildExperienceHtml(data.work_experience)}</div>`;
+  }
+  if (hasContent(data.education)) {
+    main += `<div class="resume-section"><h2 class="resume-section-title">Education</h2>${buildEducationHtml(data.education)}</div>`;
+  }
+  if (hasContent(data.awards_honors)) {
+    main += `<div class="resume-section"><h2 class="resume-section-title">Awards & Recognition</h2>${buildAwardsHtml(data.awards_honors)}</div>`;
+  }
+  if (hasContent(data.volunteer_experience)) {
+    main += `<div class="resume-section"><h2 class="resume-section-title">Community Involvement</h2>${buildVolunteerHtml(data.volunteer_experience)}</div>`;
+  }
+
+  return `<div class="resume-sidebar">${sidebar}</div><div class="resume-main">${main}</div>`;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Template: prof-accountant (Accountant / Finance)
+// Navy/slate, clean serif, certifications & credentials prominent
+// ═══════════════════════════════════════════════════════════════════════════
+
+function renderProfAccountant(data) {
+  const info = data.personal_info || {};
+  const contact = buildContactInfo(info);
+  const links = buildLinks(info);
+
+  let html = `<div class="resume-header">
+    <h1>${esc(info.full_name || "Your Name")}</h1>
+    ${contact.length ? `<div class="resume-contact-row">${contact.map((c) => `<span>${c}</span>`).join("")}</div>` : ""}
+    ${links.length ? `<div class="resume-contact-row resume-links-row">${links.map((l) => `<span><a href="${esc(l.url)}">${esc(l.label)}</a></span>`).join("")}</div>` : ""}
+  </div>`;
+
+  if (data.summary || data.objective) {
+    html += `<div class="resume-section"><h2 class="resume-section-title">Professional Summary</h2><p class="resume-summary">${esc(data.summary || data.objective)}</p></div>`;
+  }
+  if (hasContent(data.certifications)) {
+    html += `<div class="resume-section"><h2 class="resume-section-title">Licenses & Professional Certifications</h2>${buildCertificationsHtml(data.certifications)}</div>`;
+  }
+  if (hasContent(data.work_experience)) {
+    html += `<div class="resume-section"><h2 class="resume-section-title">Professional Experience</h2>${buildExperienceHtml(data.work_experience)}</div>`;
+  }
+  if (hasContent(data.education)) {
+    html += `<div class="resume-section"><h2 class="resume-section-title">Education</h2>${buildEducationHtml(data.education)}</div>`;
+  }
+  if (hasSkills(data.technical_skills)) {
+    html += `<div class="resume-section"><h2 class="resume-section-title">Core Competencies</h2>${buildSkillsHtml(data.technical_skills, data.soft_skills)}</div>`;
+  }
+  if (hasContent(data.awards_honors)) {
+    html += `<div class="resume-section"><h2 class="resume-section-title">Awards & Achievements</h2>${buildAwardsHtml(data.awards_honors)}</div>`;
+  }
+  if (hasContent(data.languages)) {
+    html += `<div class="resume-section"><h2 class="resume-section-title">Languages</h2><p>${buildLanguagesHtml(data.languages)}</p></div>`;
+  }
+  if (hasContent(data.volunteer_experience)) {
+    html += `<div class="resume-section"><h2 class="resume-section-title">Professional Affiliations</h2>${buildVolunteerHtml(data.volunteer_experience)}</div>`;
+  }
+
+  return html;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Template: prof-sales (Sales Executive)
+// Bold red accent, achievements-first, metrics-driven bullets
+// ═══════════════════════════════════════════════════════════════════════════
+
+function renderProfSales(data) {
+  const info = data.personal_info || {};
+  const links = buildLinks(info);
+
+  let sidebar = `<h1>${esc(info.full_name || "Your Name")}</h1>`;
+  const contactItems = [];
+  if (info.email) contactItems.push(`<span>📧 ${esc(info.email)}</span>`);
+  if (info.phone) contactItems.push(`<span>📱 ${esc(info.phone)}</span>`);
+  const location = [info.city, info.state].filter(Boolean).join(", ");
+  if (location) contactItems.push(`<span>📍 ${esc(location)}</span>`);
+  links.forEach((l) => contactItems.push(`<span><a href="${esc(l.url)}">${esc(l.label)}</a></span>`));
+  if (contactItems.length) sidebar += `<div class="resume-contact-col">${contactItems.join("")}</div>`;
+
+  if (hasContent(data.soft_skills)) {
+    sidebar += `<div class="sidebar-section"><h2 class="resume-section-title">Sales Strengths</h2>${data.soft_skills.map((s) => `<div class="sidebar-item">🎯 ${esc(s)}</div>`).join("")}</div>`;
+  }
+  if (hasSkills(data.technical_skills)) {
+    sidebar += `<div class="sidebar-section"><h2 class="resume-section-title">Tools & Platforms</h2>${buildSkillsHtml(data.technical_skills, [])}</div>`;
+  }
+  if (hasContent(data.certifications)) {
+    sidebar += `<div class="sidebar-section"><h2 class="resume-section-title">Certifications</h2>${data.certifications.map((c) => `<div class="sidebar-item"><strong>${esc(c.name || "")}</strong><br/>${esc(c.issuing_organization || "")}</div>`).join("")}</div>`;
+  }
+  if (hasContent(data.languages)) {
+    sidebar += `<div class="sidebar-section"><h2 class="resume-section-title">Languages</h2>${data.languages.map((l) => `<div class="sidebar-item">${esc(l.language || "")}${l.proficiency ? ` — ${esc(l.proficiency)}` : ""}</div>`).join("")}</div>`;
+  }
+
+  let main = "";
+  if (data.summary || data.objective) {
+    main += `<div class="resume-section"><h2 class="resume-section-title">Executive Profile</h2><p class="resume-summary">${esc(data.summary || data.objective)}</p></div>`;
+  }
+  if (hasContent(data.work_experience)) {
+    main += `<div class="resume-section"><h2 class="resume-section-title">Sales Experience</h2>${buildExperienceHtml(data.work_experience)}</div>`;
+  }
+  if (hasContent(data.awards_honors)) {
+    main += `<div class="resume-section"><h2 class="resume-section-title">Key Achievements</h2>${buildAwardsHtml(data.awards_honors)}</div>`;
+  }
+  if (hasContent(data.education)) {
+    main += `<div class="resume-section"><h2 class="resume-section-title">Education</h2>${buildEducationHtml(data.education)}</div>`;
+  }
+  if (hasContent(data.volunteer_experience)) {
+    main += `<div class="resume-section"><h2 class="resume-section-title">Leadership & Volunteering</h2>${buildVolunteerHtml(data.volunteer_experience)}</div>`;
+  }
+
+  return `<div class="resume-sidebar">${sidebar}</div><div class="resume-main">${main}</div>`;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Template: prof-nurse (Nurse / Healthcare)
+// Clean green, clinical layout, licenses first, compact
+// ═══════════════════════════════════════════════════════════════════════════
+
+function renderProfNurse(data) {
+  const info = data.personal_info || {};
+  const contact = buildContactInfo(info);
+  const links = buildLinks(info);
+
+  let html = `<div class="resume-header">
+    <h1>${esc(info.full_name || "Your Name")}</h1>
+    ${contact.length ? `<div class="resume-contact-row">${contact.map((c) => `<span>${c}</span>`).join("")}</div>` : ""}
+    ${links.length ? `<div class="resume-contact-row resume-links-row">${links.map((l) => `<span><a href="${esc(l.url)}">${esc(l.label)}</a></span>`).join("")}</div>` : ""}
+  </div>`;
+
+  if (data.summary || data.objective) {
+    html += `<div class="resume-section"><h2 class="resume-section-title">Clinical Profile</h2><p class="resume-summary">${esc(data.summary || data.objective)}</p></div>`;
+  }
+  // Licenses and credentials first
+  if (hasContent(data.certifications)) {
+    html += `<div class="resume-section"><h2 class="resume-section-title">Licenses & Certifications</h2>${buildCertificationsHtml(data.certifications)}</div>`;
+  }
+  if (hasContent(data.work_experience)) {
+    html += `<div class="resume-section"><h2 class="resume-section-title">Clinical Experience</h2>${buildExperienceHtml(data.work_experience)}</div>`;
+  }
+  if (hasContent(data.education)) {
+    html += `<div class="resume-section"><h2 class="resume-section-title">Education</h2>${buildEducationHtml(data.education)}</div>`;
+  }
+  if (hasSkills(data.technical_skills)) {
+    html += `<div class="resume-section"><h2 class="resume-section-title">Clinical Skills</h2>${buildSkillsHtml(data.technical_skills, data.soft_skills)}</div>`;
+  }
+  if (hasContent(data.awards_honors)) {
+    html += `<div class="resume-section"><h2 class="resume-section-title">Awards & Recognition</h2>${buildAwardsHtml(data.awards_honors)}</div>`;
+  }
+  if (hasContent(data.volunteer_experience)) {
+    html += `<div class="resume-section"><h2 class="resume-section-title">Volunteer & Community Service</h2>${buildVolunteerHtml(data.volunteer_experience)}</div>`;
+  }
+  if (hasContent(data.languages)) {
+    html += `<div class="resume-section"><h2 class="resume-section-title">Languages</h2><p>${buildLanguagesHtml(data.languages)}</p></div>`;
+  }
+
+  return html;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Template: prof-engineer (Mechanical/Civil/Electrical Engineer)
+// Steel blue-grey sidebar, structured layout, technical focus
+// ═══════════════════════════════════════════════════════════════════════════
+
+function renderProfEngineer(data) {
+  const info = data.personal_info || {};
+  const links = buildLinks(info);
+
+  let sidebar = `<h1>${esc(info.full_name || "Your Name")}</h1>`;
+  const contactItems = [];
+  if (info.email) contactItems.push(`<span>📧 ${esc(info.email)}</span>`);
+  if (info.phone) contactItems.push(`<span>📱 ${esc(info.phone)}</span>`);
+  const location = [info.city, info.state].filter(Boolean).join(", ");
+  if (location) contactItems.push(`<span>📍 ${esc(location)}</span>`);
+  links.forEach((l) => contactItems.push(`<span><a href="${esc(l.url)}">${esc(l.label)}</a></span>`));
+  if (contactItems.length) sidebar += `<div class="resume-contact-col">${contactItems.join("")}</div>`;
+
+  if (hasSkills(data.technical_skills)) {
+    sidebar += `<div class="sidebar-section"><h2 class="resume-section-title">Technical Skills</h2>${buildSkillsHtml(data.technical_skills, [])}</div>`;
+  }
+  if (hasContent(data.soft_skills)) {
+    sidebar += `<div class="sidebar-section"><h2 class="resume-section-title">Competencies</h2>${data.soft_skills.map((s) => `<div class="sidebar-item">▸ ${esc(s)}</div>`).join("")}</div>`;
+  }
+  if (hasContent(data.certifications)) {
+    sidebar += `<div class="sidebar-section"><h2 class="resume-section-title">Certifications</h2>${data.certifications.map((c) => `<div class="sidebar-item"><strong>${esc(c.name || "")}</strong><br/>${esc(c.issuing_organization || "")}${c.issue_date ? ` (${esc(c.issue_date)})` : ""}</div>`).join("")}</div>`;
+  }
+  if (hasContent(data.languages)) {
+    sidebar += `<div class="sidebar-section"><h2 class="resume-section-title">Languages</h2>${data.languages.map((l) => `<div class="sidebar-item">${esc(l.language || "")}${l.proficiency ? ` — ${esc(l.proficiency)}` : ""}</div>`).join("")}</div>`;
+  }
+
+  let main = "";
+  if (data.summary || data.objective) {
+    main += `<div class="resume-section"><h2 class="resume-section-title">Engineering Profile</h2><p class="resume-summary">${esc(data.summary || data.objective)}</p></div>`;
+  }
+  if (hasContent(data.work_experience)) {
+    main += `<div class="resume-section"><h2 class="resume-section-title">Professional Experience</h2>${buildExperienceHtml(data.work_experience)}</div>`;
+  }
+  if (hasContent(data.projects)) {
+    main += `<div class="resume-section"><h2 class="resume-section-title">Engineering Projects</h2>${buildProjectsHtml(data.projects)}</div>`;
+  }
+  if (hasContent(data.education)) {
+    main += `<div class="resume-section"><h2 class="resume-section-title">Education</h2>${buildEducationHtml(data.education)}</div>`;
+  }
+  if (hasContent(data.awards_honors)) {
+    main += `<div class="resume-section"><h2 class="resume-section-title">Awards</h2>${buildAwardsHtml(data.awards_honors)}</div>`;
+  }
+  if (hasContent(data.volunteer_experience)) {
+    main += `<div class="resume-section"><h2 class="resume-section-title">Volunteer Experience</h2>${buildVolunteerHtml(data.volunteer_experience)}</div>`;
+  }
+
+  return `<div class="resume-sidebar">${sidebar}</div><div class="resume-main">${main}</div>`;
+}
+
+// ─── Renderer Map ─────────────────────────────────────────────────────────
 
 const renderers = {
   classic: renderClassic,
   modern: renderModern,
   minimal: renderMinimal,
+  photo: renderPhoto,
+  "prof-developer": renderProfDeveloper,
+  "prof-teacher": renderProfTeacher,
+  "prof-customer-service": renderProfCustomerService,
+  "prof-accountant": renderProfAccountant,
+  "prof-sales": renderProfSales,
+  "prof-nurse": renderProfNurse,
+  "prof-engineer": renderProfEngineer,
 };
 
 /**
  * Render resume data to HTML using the specified template.
  * @param {object} data - Resume JSON data
- * @param {string} template - Template name: 'classic', 'modern', 'minimal'
+ * @param {string} template - Template name
  * @returns {string} HTML string to inject into .resume-paper
  */
 export function renderResume(data, template = "classic") {

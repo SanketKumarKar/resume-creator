@@ -151,6 +151,211 @@ Return JSON: { "suggested_skills": { "category": ["skill1", "skill2"] } }`;
     res.status(500).json({ error: err.message });
   }
 });
+// ─── Parse Resume ─────────────────────────────────────────────────────────────
+
+router.post("/ai/parse-resume", async (req, res) => {
+  try {
+    const { rawContent } = req.body;
+
+    if (!rawContent) {
+      return res.status(400).json({ error: "rawContent is required" });
+    }
+
+    const systemPrompt = `You are an expert resume parser and writer. Your job is to extract, clean, and map unstructured resume text or JSON into the specific JSON schema provided.
+
+RULES:
+- Fix grammatical errors and rewrite bullet points to be ATS-friendly.
+- Do NOT hallucinate. Do not invent any experience, metrics, jobs, skills, or schools that are not present in the input.
+- Map any photo URL found to "personal_info.photoUrl".
+- Maintain the original meaning.
+- Start each work experience bullet with a strong action verb in the past tense (unless it's a current role).
+- CRITICAL: Output ONLY raw JSON. Do NOT wrap your output in markdown code blocks (e.g. \`\`\`json). The response must start precisely with { and end with }.
+
+SCHEMA TO FOLLOW STRICTLY (Return ONLY valid JSON matching this structure):
+{
+  "personal_info": {
+    "full_name": "string",
+    "email": "string",
+    "phone": "string",
+    "city": "string",
+    "state": "string",
+    "country": "string",
+    "linkedin": "string",
+    "github": "string",
+    "portfolio": "string",
+    "photoUrl": "string or null"
+  },
+  "summary": "string",
+  "education": [
+    {
+      "degree": "string",
+      "field_of_study": "string",
+      "institution": "string",
+      "start_date": "string",
+      "end_date": "string",
+      "gpa": "string"
+    }
+  ],
+  "work_experience": [
+    {
+      "job_title": "string",
+      "company": "string",
+      "location": "string",
+      "start_date": "string",
+      "end_date": "string",
+      "is_current": true,
+      "responsibilities": ["string"],
+      "achievements": ["string"]
+    }
+  ],
+  "technical_skills": {
+    "programming_languages": ["string"],
+    "frameworks_libraries": ["string"],
+    "databases": ["string"],
+    "cloud_platforms": ["string"],
+    "tools_software": ["string"],
+    "operating_systems": ["string"],
+    "methodologies": ["string"],
+    "other": ["string"]
+  },
+  "soft_skills": ["string"],
+  "projects": [
+    {
+      "name": "string",
+      "description": "string",
+      "technologies_used": ["string"],
+      "url": "string",
+      "github_link": "string"
+    }
+  ],
+  "certifications": [
+    {
+      "name": "string",
+      "issuing_organization": "string",
+      "issue_date": "string"
+    }
+  ],
+  "awards_honors": [
+    {
+      "title": "string",
+      "date": "string",
+      "issuer": "string",
+      "description": "string"
+    }
+  ],
+  "languages": [
+    {
+      "language": "string",
+      "proficiency": "string"
+    }
+  ]
+}`;
+
+    const userPrompt = `Parse and improve the following resume data. 
+
+IMPORTANT INSTRUCTION: Return ONLY the raw JSON object. Do NOT wrap your response in markdown code blocks like \`\`\`json. The very first character of your response MUST be { and the last must be }.
+
+Resume Data:
+${rawContent.substring(0, 15000)}`;
+
+    const result = await callOllama(systemPrompt, userPrompt);
+    res.json(result);
+  } catch (err) {
+    console.error("Parse resume error:", err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ─── Identify Profession / Auto-Select Template ─────────────────────────────
+
+const VALID_TEMPLATES = [
+  "classic", "modern", "minimal", "photo",
+  "prof-developer", "prof-teacher", "prof-customer-service",
+  "prof-accountant", "prof-sales", "prof-nurse", "prof-engineer",
+];
+
+/**
+ * Keyword heuristic fallback — no AI needed.
+ */
+function heuristicTemplateFromData(data) {
+  const text = [
+    ...(data.work_experience || []).map(j => `${j.job_title || ""} ${j.company || ""}`),
+    data.summary || "",
+    data.objective || "",
+    ...Object.values(data.technical_skills || {}).flat(),
+    ...(data.soft_skills || []),
+  ].join(" ").toLowerCase();
+
+  if (/\b(nurse|nursing|rn|lpn|clinical|healthcare|medical|hospital|patient care)\b/.test(text)) return "prof-nurse";
+  if (/\b(teacher|professor|instructor|tutor|educator|classroom|curriculum|pedagogy|adjunct)\b/.test(text)) return "prof-teacher";
+  if (/\b(accountant|accounting|auditor|cpa|cfa|finance manager|tax|bookkeeping|financial analyst|controller)\b/.test(text)) return "prof-accountant";
+  if (/\b(sales executive|account executive|account manager|business development|quota|revenue target|crm|pipeline|closing)\b/.test(text)) return "prof-sales";
+  if (/\b(customer service|support agent|call center|help desk|client relations|customer success)\b/.test(text)) return "prof-customer-service";
+  if (/\b(mechanical engineer|civil engineer|electrical engineer|chemical engineer|structural engineer|systems engineer|manufacturing)\b/.test(text)) return "prof-engineer";
+  if (/\b(developer|software engineer|programmer|devops|frontend|backend|fullstack|full.stack|data scientist|machine learning|ml engineer|qa engineer|sre|site reliability)\b/.test(text)) return "prof-developer";
+  return "classic";
+}
+
+router.post("/ai/identify-profession", async (req, res) => {
+  const { resumeData } = req.body;
+  if (!resumeData) {
+    return res.status(400).json({ error: "resumeData is required" });
+  }
+
+  const jobTitles = (resumeData.work_experience || []).map(j => j.job_title || "").filter(Boolean).join(", ") || "Not specified";
+  const context = buildResumeContext(resumeData);
+
+  const systemPrompt = `You are a resume analyst. Return ONLY a valid JSON object, no markdown, no explanation.
+Pick the best template key for the candidate from this list:
+classic, modern, minimal, photo, prof-developer, prof-teacher, prof-customer-service, prof-accountant, prof-sales, prof-nurse, prof-engineer
+
+JSON format: {"template":"<key>","confidence":"high","reason":"one sentence"}`;
+
+  const userPrompt = `Job titles: ${jobTitles}
+Summary: ${resumeData.summary || resumeData.objective || "N/A"}
+${context}
+Return JSON:`;
+
+  // Layer 1: Try AI with JSON parsing
+  try {
+    const result = await callOllama(systemPrompt, userPrompt);
+    if (result && VALID_TEMPLATES.includes(result.template)) {
+      return res.json({
+        template: result.template,
+        confidence: result.confidence || "medium",
+        reason: result.reason || `AI matched template: ${result.template}`,
+      });
+    }
+    // Got a result but template key wasn't valid — scan values
+    if (result) {
+      const blob = JSON.stringify(result).toLowerCase();
+      const found = VALID_TEMPLATES.find(t => blob.includes(t));
+      if (found) {
+        return res.json({ template: found, confidence: "medium", reason: `AI suggested: ${found}` });
+      }
+    }
+  } catch (_jsonErr) {
+    // Layer 2: JSON parse failed — get raw text and scan for template key
+    try {
+      const rawText = await callOllama(systemPrompt, userPrompt, { json: false });
+      const lower = rawText.toLowerCase();
+      const found = VALID_TEMPLATES.find(t => lower.includes(t));
+      if (found) {
+        return res.json({ template: found, confidence: "medium", reason: `Extracted from AI response` });
+      }
+    } catch (_rawErr) {
+      // fall through to heuristic
+    }
+  }
+
+  // Layer 3: Pure keyword heuristic — never fails
+  const template = heuristicTemplateFromData(resumeData);
+  res.json({
+    template,
+    confidence: "low",
+    reason: `Matched by keyword heuristic (job title: ${jobTitles})`,
+  });
+});
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 

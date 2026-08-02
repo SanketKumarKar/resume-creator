@@ -17,11 +17,13 @@ export function initFormEditor(containerEl) {
   renderForm();
 
   // Re-render when store changes from non-form sources
-  store.onChange(() => {
+  const unsub = store.onChange(() => {
     if (!isUpdatingFromStore) {
       renderForm();
     }
   });
+  
+  return unsub;
 }
 
 function updateStore(path, value) {
@@ -58,6 +60,24 @@ function renderForm() {
         <div class="form-row">
           ${field("Portfolio", "personal_info.portfolio", info.portfolio, "yoursite.dev")}
           ${field("Website", "personal_info.website", info.website, "website.com")}
+        </div>
+        <div class="form-group form-group--full photo-upload-group">
+          <label>Profile Photo <span class="label-hint">(used in Photo template)</span></label>
+          <div class="photo-upload-area">
+            <div class="photo-preview" id="photo-preview-container">
+              ${info.photoUrl
+                ? `<img src="${esc(info.photoUrl)}" alt="Profile" class="photo-preview__img" />`
+                : `<div class="photo-preview__placeholder">👤<br/><span>No photo</span></div>`}
+            </div>
+            <div class="photo-upload-controls">
+              <label class="btn btn--secondary btn--sm photo-upload-label" for="photo-file-input">
+                📁 Choose File
+              </label>
+              <input type="file" id="photo-file-input" accept="image/*" class="photo-file-input" />
+              ${field("Or paste URL", "personal_info.photoUrl", info.photoUrl, "https://example.com/photo.jpg")}
+              ${info.photoUrl ? `<button class="btn btn--danger btn--sm" id="photo-clear-btn">✕ Clear</button>` : ""}
+            </div>
+          </div>
         </div>
       `)}
 
@@ -439,6 +459,57 @@ function attachEventListeners() {
       header.parentElement.classList.toggle("collapsed");
     });
   });
+
+  // Photo file upload
+  const photoFileInput = container.querySelector("#photo-file-input");
+  if (photoFileInput) {
+    photoFileInput.addEventListener("change", () => {
+      const file = photoFileInput.files?.[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const dataUrl = e.target.result;
+        updateStore("personal_info.photoUrl", dataUrl);
+        // Update preview immediately
+        const previewContainer = container.querySelector("#photo-preview-container");
+        if (previewContainer) {
+          previewContainer.innerHTML = `<img src="${dataUrl}" alt="Profile" class="photo-preview__img" />`;
+        }
+        // Show the clear button
+        const existingClear = container.querySelector("#photo-clear-btn");
+        if (!existingClear) {
+          const controls = container.querySelector(".photo-upload-controls");
+          if (controls) {
+            const clearBtn = document.createElement("button");
+            clearBtn.className = "btn btn--danger btn--sm";
+            clearBtn.id = "photo-clear-btn";
+            clearBtn.textContent = "✕ Clear";
+            controls.appendChild(clearBtn);
+            clearBtn.addEventListener("click", clearPhoto);
+          }
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  // Photo clear button
+  const photoClearBtn = container.querySelector("#photo-clear-btn");
+  if (photoClearBtn) {
+    photoClearBtn.addEventListener("click", clearPhoto);
+  }
+
+  function clearPhoto() {
+    updateStore("personal_info.photoUrl", null);
+    const previewContainer = container.querySelector("#photo-preview-container");
+    if (previewContainer) {
+      previewContainer.innerHTML = `<div class="photo-preview__placeholder">👤<br/><span>No photo</span></div>`;
+    }
+    const urlInput = container.querySelector('[data-path="personal_info.photoUrl"]');
+    if (urlInput) urlInput.value = "";
+    const clearBtnEl = container.querySelector("#photo-clear-btn");
+    if (clearBtnEl) clearBtnEl.remove();
+  }
 
   // Input/textarea change
   container.querySelectorAll("input[data-path], textarea[data-path]").forEach((el) => {

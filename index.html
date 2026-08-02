@@ -29,11 +29,28 @@
         <!-- Template Selector -->
         <div class="template-select">
           <select id="template-select">
-            <option value="classic">📋 Classic</option>
-            <option value="modern">🎨 Modern</option>
-            <option value="minimal">✨ Minimal</option>
+            <optgroup label="General Templates">
+              <option value="classic">📋 Classic</option>
+              <option value="modern">🎨 Modern</option>
+              <option value="minimal">✨ Minimal</option>
+              <option value="photo">📸 Photo</option>
+            </optgroup>
+            <optgroup label="Profession Themes">
+              <option value="prof-developer">💻 Software Developer</option>
+              <option value="prof-teacher">🎓 Teacher</option>
+              <option value="prof-customer-service">🎧 Customer Service</option>
+              <option value="prof-accountant">💼 Accountant</option>
+              <option value="prof-sales">📈 Sales Executive</option>
+              <option value="prof-nurse">🏥 Nurse</option>
+              <option value="prof-engineer">⚙️ Engineer</option>
+            </optgroup>
           </select>
         </div>
+
+        <!-- AI Auto-Detect Template Button -->
+        <button id="auto-detect-template" class="btn btn--ai btn--sm" title="Let AI pick the best template for your profession" style="display:none;">
+          🤖 Auto-Detect
+        </button>
 
         <!-- AI Status -->
         <div class="ai-status">
@@ -43,6 +60,10 @@
       </div>
 
       <div class="toolbar__actions">
+        <label for="bulk-upload-json" class="btn btn--secondary" style="cursor: pointer; margin-right: 8px;">
+          📂 Bulk Upload JSON
+        </label>
+        <input type="file" id="bulk-upload-json" accept=".json" style="display: none;" />
         <button id="export-pdf" class="btn btn--primary">
           📄 Export PDF
         </button>
@@ -57,6 +78,7 @@
         <div class="editor-panel__header">
           <h1 class="editor-panel__title">Resume Editor</h1>
         </div>
+        <section id="template-library" class="template-library" aria-label="Resume template gallery"></section>
         <div id="editor-body" class="editor-panel__body">
           <!-- Form or JSON editor injected here -->
         </div>
@@ -76,6 +98,15 @@
 
     </main>
 
+    <!-- Loader Overlay -->
+    <div id="ai-loader-overlay" class="loader-overlay hidden">
+      <div class="loader-content">
+        <div class="loader-spinner"></div>
+        <h3 class="loader-title">AI is Analyzing...</h3>
+        <p class="loader-text">Extracting structure, fixing grammar, and optimizing for ATS.</p>
+      </div>
+    </div>
+
     <!-- Toast Container -->
     <div id="toast-container" class="toast-container"></div>
 
@@ -84,3 +115,4 @@
   <script type="module" src="/src/main.js"></script>
 </body>
 </html>
+
