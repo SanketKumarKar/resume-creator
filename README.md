@@ -28,11 +28,25 @@ A beautiful, ATS-friendly resume generator built with Vanilla JavaScript, Vite, 
 ```text
 resume-creator/
 ├── src/
-│   ├── main.js                 # App entry point & event wiring
+│   ├── main.js                 # React bootstrap
+│   ├── app/
+│   │   └── App.jsx             # App orchestration, data flow, bulk export
+│   ├── components/
+│   │   ├── layout/
+│   │   │   ├── AppToolbar.jsx
+│   │   │   └── PreviewPanel.jsx
+│   │   └── editor/
+│   │       ├── FormEditor.jsx
+│   │       ├── JsonEditor.jsx
+│   │       ├── BulletSection.jsx
+│   │       ├── Field.jsx
+│   │       ├── ReorderableList.jsx
+│   │       ├── Section.jsx
+│   │       └── ValidationList.jsx
+│   ├── utils/
+│   │   └── resumeUtils.js      # JSON normalization, path helpers, reordering utilities
 │   ├── resumeStore.js          # Reactive centralized data store
 │   ├── templateRenderer.js     # Engine to generate HTML from JSON data
-│   ├── formEditor.js           # GUI editor logic (sections, dynamic arrays, AI calls)
-│   ├── jsonEditor.js           # Raw JSON textarea handler
 │   ├── aiClient.js             # API wrapper for backend endpoints
 │   ├── pdfExport.js            # html2pdf integration
 │   ├── style.css               # App UI styles (dark theme, layouts)

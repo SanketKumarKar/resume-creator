@@ -123,6 +123,13 @@ body {
   width: 100vw;
 }
 
+.app-shell {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100vw;
+}
+
 /* ─── Top Toolbar ───────────────────────────────────────────────────────── */
 .toolbar {
   display: flex;
@@ -736,6 +743,15 @@ body {
   justify-content: space-between;
 }
 
+.list-item__controls,
+.bullet-item__controls,
+.section-inline-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
 .list-item__number {
   font-size: var(--font-xs);
   font-weight: 600;
@@ -757,6 +773,31 @@ body {
 
 .list-item__remove:hover {
   color: var(--error);
+}
+
+.list-item__move,
+.bullet-item__move {
+  background: transparent;
+  border: 1px solid var(--border-light);
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  font-size: var(--font-xs);
+  transition: all var(--transition-fast);
+}
+
+.list-item__move:hover,
+.bullet-item__move:hover {
+  color: var(--text-primary);
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.list-item.is-dragging,
+.bullet-item.is-dragging {
+  opacity: 0.7;
+  outline: 1px dashed var(--accent);
 }
 
 /* ─── Bullet Point Editor ───────────────────────────────────────────────── */
@@ -820,6 +861,10 @@ body {
 .btn--add:hover {
   background: hsla(220, 90%, 56%, 0.2);
   border-style: solid;
+}
+
+.btn--add-inline {
+  width: auto;
 }
 
 /* ─── AI Inline Button ──────────────────────────────────────────────────── */
