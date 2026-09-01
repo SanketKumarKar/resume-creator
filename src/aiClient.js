@@ -1,6 +1,6 @@
 /**
  * aiClient.js
- * Frontend API client for Ollama/Gemma4 AI features.
+ * Frontend API client for Gemini or local Ollama AI features.
  */
 
 const API_BASE = "/api";
@@ -8,8 +8,8 @@ const API_BASE = "/api";
 let _aiAvailable = null;
 
 /**
- * Check if the AI backend (Ollama) is available.
- * Caches the result for 30 seconds.
+ * Check whether the configured AI backend is available.
+ * The backend selects Gemini when GEMINI_API_KEY is configured; otherwise it uses Ollama.
  */
 export async function checkAiStatus() {
   try {
@@ -19,8 +19,8 @@ export async function checkAiStatus() {
       return false;
     }
     const data = await res.json();
-    _aiAvailable = data.available;
-    return data.available;
+    _aiAvailable = Boolean(data.available);
+    return _aiAvailable;
   } catch {
     _aiAvailable = false;
     return false;

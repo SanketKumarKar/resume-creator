@@ -1,13 +1,19 @@
 import { Router } from "express";
-import { callOllama, checkOllamaAvailable } from "./ollamaService.js";
+import { callAI, getAIStatus } from "./aiAdapter.js";
 
 const router = Router();
 
 // ─── Health Check ────────────────────────────────────────────────────────────
 
 router.get("/ai/status", async (req, res) => {
-  const available = await checkOllamaAvailable();
-  res.json({ available, model: process.env.OLLAMA_MODEL || "gemma4" });
+  const status = await getAIStatus();
+  res.json({
+    available: status.available,
+    provider: status.provider,
+    model: status.model,
+    gemini: status.gemini,
+    ollama: status.ollama,
+  });
 });
 
 // ─── Enhance Bullet Points ──────────────────────────────────────────────────
@@ -37,7 +43,7 @@ ${bullets.map((b, i) => `${i + 1}. ${b}`).join("\n")}
 
 Return JSON: { "enhanced_bullets": ["...", "..."] }`;
 
-    const result = await callOllama(systemPrompt, userPrompt);
+    const result = await callAI(systemPrompt, userPrompt);
     res.json({ enhanced_bullets: result.enhanced_bullets || [] });
   } catch (err) {
     console.error("Enhance bullets error:", err.message);
@@ -73,7 +79,7 @@ ${context}
 
 Return JSON: { "summary": "..." }`;
 
-    const result = await callOllama(systemPrompt, userPrompt);
+    const result = await callAI(systemPrompt, userPrompt);
     res.json({ summary: result.summary || "" });
   } catch (err) {
     console.error("Generate summary error:", err.message);
@@ -107,7 +113,7 @@ RULES:
 
 Return JSON: { "enhanced_description": "..." }`;
 
-    const result = await callOllama(systemPrompt, userPrompt);
+    const result = await callAI(systemPrompt, userPrompt);
     res.json({ enhanced_description: result.enhanced_description || "" });
   } catch (err) {
     console.error("Enhance description error:", err.message);
@@ -144,7 +150,7 @@ Soft skills: ${JSON.stringify(resumeData.soft_skills || [])}
 
 Return JSON: { "suggested_skills": { "category": ["skill1", "skill2"] } }`;
 
-    const result = await callOllama(systemPrompt, userPrompt);
+    const result = await callAI(systemPrompt, userPrompt);
     res.json({ suggested_skills: result.suggested_skills || {} });
   } catch (err) {
     console.error("Suggest skills error:", err.message);
@@ -258,7 +264,7 @@ IMPORTANT INSTRUCTION: Return ONLY the raw JSON object. Do NOT wrap your respons
 Resume Data:
 ${rawContent.substring(0, 15000)}`;
 
-    const result = await callOllama(systemPrompt, userPrompt);
+    const result = await callAI(systemPrompt, userPrompt);
     res.json(result);
   } catch (err) {
     console.error("Parse resume error:", err.message);
@@ -318,7 +324,7 @@ Return JSON:`;
 
   // Layer 1: Try AI with JSON parsing
   try {
-    const result = await callOllama(systemPrompt, userPrompt);
+    const result = await callAI(systemPrompt, userPrompt);
     if (result && VALID_TEMPLATES.includes(result.template)) {
       return res.json({
         template: result.template,
@@ -337,7 +343,7 @@ Return JSON:`;
   } catch (_jsonErr) {
     // Layer 2: JSON parse failed — get raw text and scan for template key
     try {
-      const rawText = await callOllama(systemPrompt, userPrompt, { json: false });
+      const rawText = await callAI(systemPrompt, userPrompt, { json: false });
       const lower = rawText.toLowerCase();
       const found = VALID_TEMPLATES.find(t => lower.includes(t));
       if (found) {
